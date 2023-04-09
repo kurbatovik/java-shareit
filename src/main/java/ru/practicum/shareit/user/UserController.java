@@ -28,7 +28,7 @@ public class UserController {
         this.service = service;
     }
 
-    //Просмотр всех пользователей
+    //Просмотр всех пользователей.
     @GetMapping("")
     public ResponseEntity<List<UserDto>> getAll() {
         log.info("Request on get all");
