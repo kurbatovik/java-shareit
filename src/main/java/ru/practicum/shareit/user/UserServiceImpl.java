@@ -1,7 +1,7 @@
 package ru.practicum.shareit.user;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.SaveErrorException;
@@ -17,38 +17,33 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private final UserRepository storage;
-    private final UserMapper mapper;
+    private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-
-    @Autowired
-    public UserServiceImpl(UserRepository storage, UserMapper mapper) {
-        this.storage = storage;
-        this.mapper = mapper;
-    }
 
     @Override
     public UserDto add(UserDto userDto) {
-        User user = mapper.fromDto(userDto);
-        storage.findByEmail(user.getEmail()).ifPresent(this::throwExceptionWhenUserIsPresent);
-        User newUser = storage.create(user).orElseThrow(
+        User user = userMapper.fromDto(userDto);
+        userRepository.findByEmail(user.getEmail()).ifPresent(this::throwExceptionWhenUserIsPresent);
+        User newUser = userRepository.create(user).orElseThrow(
                 () -> new SaveErrorException("User is not save: {0}", user)
         );
-        return mapper.toDto(newUser);
+        return userMapper.toDto(newUser);
     }
 
     @Override
     public UserDto edit(Long id, UserDto userDto) {
         boolean isUpdated = false;
-        User updatedUser = mapper.fromDto(userDto);
+        User updatedUser = userMapper.fromDto(userDto);
         User user = returnUserOrThrowUserNotFoundException(id);
         log.info("Update: {}", user);
         String updatedUserEmail = updatedUser.getEmail();
         if (updatedUserEmail != null && !updatedUserEmail.equals(user.getEmail())) {
-            storage.findByEmail(updatedUserEmail).filter(u -> u.getId() != user.getId())
+            userRepository.findByEmail(updatedUserEmail).filter(u -> u.getId() != user.getId())
                     .ifPresent(this::throwExceptionWhenUserIsPresent);
-            storage.removeEmail(user.getEmail());
+            userRepository.removeEmail(user.getEmail());
             user.setEmail(updatedUserEmail);
             log.info("Update email address");
             isUpdated = true;
@@ -60,28 +55,28 @@ public class UserServiceImpl implements UserService {
             isUpdated = true;
         }
         if (isUpdated) {
-            storage.update(user);
+            userRepository.update(user);
         }
-        return mapper.toDto(user);
+        return userMapper.toDto(user);
     }
 
     @Override
     public List<UserDto> getAll() {
-        return storage.findAll().stream().map(mapper::toDto).collect(Collectors.toList());
+        return userRepository.findAll().stream().map(userMapper::toDto).collect(Collectors.toList());
     }
 
     @Override
     public UserDto getById(Long id) {
-        return mapper.toDto(returnUserOrThrowUserNotFoundException(id));
+        return userMapper.toDto(returnUserOrThrowUserNotFoundException(id));
     }
 
     @Override
     public void delete(Long id) {
-        storage.delete(id);
+        userRepository.delete(id);
     }
 
     private User returnUserOrThrowUserNotFoundException(Long id) {
-        Optional<User> optionalUser = storage.findById(id);
+        Optional<User> optionalUser = userRepository.findById(id);
         return optionalUser.orElseThrow(
                 () -> {
                     log.info("Throw new NotFoundException");

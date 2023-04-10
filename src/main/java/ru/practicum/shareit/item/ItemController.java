@@ -32,8 +32,7 @@ public class ItemController {
     public ResponseEntity<ItemDto> add(@RequestHeader("X-Sharer-User-Id") @Positive Long userId,
                                        @RequestBody @Validated(Create.class) ItemDto itemDto) {
         log.info("Request on add {}, user id: {}", itemDto, userId);
-        ItemDto newItem = itemService.add(userId, itemDto);
-        return ResponseEntity.ok(newItem);
+        return ResponseEntity.ok(itemService.add(userId, itemDto));
     }
 
     // Редактирование вещи
@@ -42,24 +41,21 @@ public class ItemController {
                                         @RequestHeader("X-Sharer-User-Id") @Positive Long userId,
                                         @RequestBody ItemDto itemDto) {
         log.info("Request on edit item id: {}, {}, user id: {}", itemId, itemDto, userId);
-        ItemDto editedItem = itemService.edit(itemId, userId, itemDto);
-        return ResponseEntity.ok(editedItem);
+        return ResponseEntity.ok(itemService.edit(itemId, userId, itemDto));
     }
 
     // Просмотр информации о конкретной вещи по её идентификатору
     @GetMapping("/{itemId}")
     public ResponseEntity<ItemDto> getById(@PathVariable @Positive Long itemId) {
         log.info("Request on get item. ID: {}", itemId);
-        ItemDto itemDto = itemService.getById(itemId);
-        return ResponseEntity.ok(itemDto);
+        return ResponseEntity.ok(itemService.getById(itemId));
     }
 
     // Просмотр владельцем списка всех его вещей с указанием названия и описания для каждой
     @GetMapping
     public ResponseEntity<List<ItemDto>> getAll(@RequestHeader("X-Sharer-User-Id") @Positive Long userId) {
         log.info("Request on get all for user id: {}", userId);
-        List<ItemDto> items = itemService.getAllByUserId(userId);
-        return ResponseEntity.ok(items);
+        return ResponseEntity.ok(itemService.getAllByUserId(userId));
     }
 
     // Поиск вещи потенциальным арендатором
@@ -69,8 +65,7 @@ public class ItemController {
         if (text.isBlank()) {
             return ResponseEntity.ok(new ArrayList<>());
         }
-        List<ItemDto> items = itemService.searchItems(text.toLowerCase(Locale.ROOT));
-        return ResponseEntity.ok(items);
+        return ResponseEntity.ok(itemService.searchItems(text.toLowerCase(Locale.ROOT)));
     }
 
 }

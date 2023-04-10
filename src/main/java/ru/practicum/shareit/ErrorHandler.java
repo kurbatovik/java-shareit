@@ -26,14 +26,14 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(UserFoundException.class)
-    @ResponseStatus(code = HttpStatus.CONFLICT)
+    @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleException(final UserFoundException e) {
         log.info("Conflict: {}", e.getMessage());
         return ErrorResponse.builder().message(e.getMessage()).build();
     }
 
     @ExceptionHandler(SaveErrorException.class)
-    @ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleException(final SaveErrorException e) {
         log.info("Internal server error: {}", e.getMessage());
         return ErrorResponse.builder().message(e.getMessage()).build();
