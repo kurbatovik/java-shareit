@@ -71,9 +71,6 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
-					<systemPropertyVariables>
-						<spring.profiles.active>production</spring.profiles.active>
-					</systemPropertyVariables>
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>
