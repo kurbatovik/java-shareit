@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.SaveErrorException;
 import ru.practicum.shareit.exception.UserFoundException;
@@ -19,31 +20,38 @@ import java.util.Map;
 @Slf4j
 public class ErrorHandler {
     @ExceptionHandler
-    @ResponseStatus
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse throwableHandler(final Exception e) {
         log.info("Server error {}", e.getMessage());
-        return ErrorResponse.builder().message(e.getMessage()).build();
+        return ErrorResponse.builder().error(e.getMessage()).build();
     }
 
     @ExceptionHandler(UserFoundException.class)
     @ResponseStatus(HttpStatus.CONFLICT)
     public ErrorResponse handleException(final UserFoundException e) {
         log.info("Conflict: {}", e.getMessage());
-        return ErrorResponse.builder().message(e.getMessage()).build();
+        return ErrorResponse.builder().error(e.getMessage()).build();
     }
 
     @ExceptionHandler(SaveErrorException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleException(final SaveErrorException e) {
         log.info("Internal server error: {}", e.getMessage());
-        return ErrorResponse.builder().message(e.getMessage()).build();
+        return ErrorResponse.builder().error(e.getMessage()).build();
     }
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleException(final NotFoundException e) {
         log.info("Not found: {}", e.getMessage());
-        return ErrorResponse.builder().message(e.getMessage()).build();
+        return ErrorResponse.builder().error(e.getMessage()).build();
+    }
+
+    @ExceptionHandler(NotAvailableException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleException(final NotAvailableException e) {
+        log.info("Not available: {}", e.getMessage());
+        return ErrorResponse.builder().error(e.getMessage()).build();
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
@@ -56,7 +64,7 @@ public class ErrorHandler {
             errors.put(fieldName, errorMessage);
             log.info("Validation failed for field: {}. Error message: {}", fieldName, errorMessage);
         });
-        return ErrorResponse.builder().message("Validation failed").errors(errors).build();
+        return ErrorResponse.builder().error("Validation failed").errors(errors).build();
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -69,6 +77,6 @@ public class ErrorHandler {
             errors.put(fieldName, errorMessage);
             log.info("Validation failed for field: {}. Error message: {}", fieldName, errorMessage);
         });
-        return ErrorResponse.builder().message("Validation failed").errors(errors).build();
+        return ErrorResponse.builder().error("Validation failed").errors(errors).build();
     }
 }
