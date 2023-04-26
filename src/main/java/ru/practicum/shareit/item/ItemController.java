@@ -1,11 +1,14 @@
 package ru.practicum.shareit.item;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.Create;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.OwnerItemDto;
 
 import javax.validation.constraints.Positive;
 import java.util.ArrayList;
@@ -17,15 +20,12 @@ import java.util.Locale;
  */
 @Slf4j
 @Validated
+@RequiredArgsConstructor
 @RestController
 @RequestMapping("/items")
 public class ItemController {
 
     private final ItemService itemService;
-
-    public ItemController(ItemService itemService) {
-        this.itemService = itemService;
-    }
 
     // Добавление новой вещи
     @PostMapping
@@ -46,16 +46,19 @@ public class ItemController {
 
     // Просмотр информации о конкретной вещи по её идентификатору
     @GetMapping("/{itemId}")
-    public ResponseEntity<ItemDto> getById(@PathVariable @Positive Long itemId) {
-        log.info("Request on get item. ID: {}", itemId);
-        return ResponseEntity.ok(itemService.getById(itemId));
+    public ResponseEntity<OwnerItemDto> getById(@RequestHeader("X-Sharer-User-Id") @Positive Long userId,
+                                                @PathVariable @Positive Long itemId) {
+        log.info("Request from user ID: {} on get item. ID: {}", userId, itemId);
+        return ResponseEntity.ok(itemService.getById(itemId, userId));
     }
 
     // Просмотр владельцем списка всех его вещей с указанием названия и описания для каждой
     @GetMapping
-    public ResponseEntity<List<ItemDto>> getAll(@RequestHeader("X-Sharer-User-Id") @Positive Long userId) {
+    public ResponseEntity<List<OwnerItemDto>> getAll(@RequestHeader("X-Sharer-User-Id") @Positive Long userId) {
         log.info("Request on get all for user id: {}", userId);
-        return ResponseEntity.ok(itemService.getAllByUserId(userId));
+        List<OwnerItemDto> allByUserId = itemService.getAllByUserId(userId);
+        System.out.println(false);
+        return ResponseEntity.ok(allByUserId);
     }
 
     // Поиск вещи потенциальным арендатором
@@ -68,4 +71,12 @@ public class ItemController {
         return ResponseEntity.ok(itemService.searchItems(text.toLowerCase(Locale.ROOT)));
     }
 
+    // Добавление комментария
+    @PostMapping("{itemId}/comment")
+    public ResponseEntity<CommentDto> addComment(@RequestHeader("X-Sharer-User-Id") @Positive Long userId,
+                                                 @RequestBody @Validated(Create.class) CommentDto commentDto,
+                                                 @PathVariable @Positive Long itemId) {
+        log.info("Request on add comment {}, item id: {}, user id: {}", commentDto.getText(), itemId, userId);
+        return ResponseEntity.ok(itemService.addComment(userId, itemId, commentDto.getText()));
+    }
 }
