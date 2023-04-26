@@ -1,44 +1,46 @@
-CREATE TABLE IF NOT EXISTS USERS (
-    ID BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    EMAIL varchar(255) NOT NULL UNIQUE,
-    NAME varchar(127) NOT NULL
+CREATE TABLE IF NOT EXISTS users
+(
+    id    BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name  VARCHAR(255) NOT NULL,
+    email VARCHAR(512) NOT NULL UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS requests (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    text VARCHAR(1023) NOT NULL,
-    user_id BIGINT NOT NULL,
-    FOREIGN KEY(user_id) REFERENCES users(id)
+
+CREATE TABLE IF NOT EXISTS requests
+(
+    id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    description  VARCHAR NOT NULL,
+    requester_id BIGINT REFERENCES users (id),
+    created      TIMESTAMP WITHOUT TIME ZONE
 );
 
-CREATE TABLE IF NOT EXISTS items (
-    id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    user_id BIGINT NOT NULL,
-    name varchar(127) NOT NULL,
-    description varchar(1023) NOT NULL,
-    available boolean  NOT NULL,
-    request_id BIGINT,
-    FOREIGN KEY(user_id) REFERENCES users(id),
-    FOREIGN KEY(request_id) REFERENCES requests(id)
+
+CREATE TABLE IF NOT EXISTS items
+(
+    id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name         VARCHAR(50) NOT NULL,
+    description  VARCHAR NOT NULL,
+    available    BOOLEAN NOT NULL,
+    user_id      BIGINT REFERENCES users (id),
+    request_id   BIGINT REFERENCES requests (id)
 );
 
-CREATE TABLE IF NOT EXISTS bookings (
-  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  user_id BIGINT NOT NULL,
-  item_id BIGINT NOT NULL,
-  start_date TIMESTAMP NOT NULL,
-  end_date TIMESTAMP NOT NULL,
-  status VARCHAR(255) NOT NULL,
-  FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (item_id) REFERENCES items(id)
+
+CREATE TABLE IF NOT EXISTS bookings
+(
+    id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    start_date   TIMESTAMP WITHOUT TIME ZONE,
+    end_date     TIMESTAMP WITHOUT TIME ZONE,
+    item_id      BIGINT REFERENCES items (id),
+    user_id      BIGINT REFERENCES users (id),
+    status       VARCHAR(20) NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS comments (
-  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  text VARCHAR(2047) NOT NULL,
-  user_id BIGINT NOT NULL,
-  item_id BIGINT NOT NULL,
-  created TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (item_id) REFERENCES items(id)
+CREATE TABLE IF NOT EXISTS comments
+(
+    id        BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    text      VARCHAR NOT NULL,
+    item_id   BIGINT REFERENCES items (id),
+    user_id   BIGINT REFERENCES users (id),
+    created   TIMESTAMP WITHOUT TIME ZONE
 );
