@@ -19,7 +19,7 @@ public class Comment {
     String text;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "author_id")
     private User author;
 
     @ManyToOne(fetch = FetchType.LAZY)

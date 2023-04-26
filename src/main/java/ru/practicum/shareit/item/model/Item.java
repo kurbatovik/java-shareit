@@ -27,10 +27,10 @@ public class Item {
     private String name;
     @Column(nullable = false)
     private String description;
-    @Column(nullable = false)
+    @Column(nullable = false, name = "is_available")
     private Boolean available;
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "owner_id")
     private User owner;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "request_id")
