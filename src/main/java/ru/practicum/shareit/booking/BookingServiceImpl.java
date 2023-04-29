@@ -2,23 +2,21 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.Variables;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.mapper.BookingMapper;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
 import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
-import ru.practicum.shareit.user.UserMapper;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -26,8 +24,6 @@ import java.util.stream.Collectors;
 public class BookingServiceImpl implements BookingService {
 
     private final BookingMapper bookingMapper;
-    private final UserMapper userMapper;
-    private final ItemMapper itemMapper;
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
@@ -39,13 +35,12 @@ public class BookingServiceImpl implements BookingService {
         if (user.getId() == item.getOwner().getId()) {
             throw new NotFoundException("You owner");
         }
-        Booking newBooking = bookingMapper.getFromDto().apply(bookingDto);
+        Booking newBooking = bookingMapper.fromDto(bookingDto);
         newBooking.setStatus(BookingStatus.WAITING);
         newBooking.setItem(item);
         newBooking.setBooker(user);
         newBooking = bookingRepository.save(newBooking);
-        return bookingMapper.getToDtoWithUserAndItem(userMapper.toDto(user), itemMapper.toDto(item))
-                .apply(newBooking);
+        return bookingMapper.toDto(newBooking);
     }
 
     @Override
@@ -53,7 +48,7 @@ public class BookingServiceImpl implements BookingService {
         Booking booking = returnBookingOrThrowException(bookingId);
         Item item = booking.getItem();
         if (userId != item.getOwner().getId()) {
-            throw new NotFoundException("User with id: {0} not have available", userId);
+            throw new NotFoundException(Variables.USER_WITH_ID_NOT_HAVE_AVAILABLE, userId);
         }
         if (booking.getStatus() != BookingStatus.WAITING) {
             throw new NotAvailableException("Booking already considered");
@@ -64,8 +59,7 @@ public class BookingServiceImpl implements BookingService {
             booking.setStatus(BookingStatus.REJECTED);
         }
         booking = bookingRepository.save(booking);
-        return bookingMapper.getToDtoWithUserAndItem(userMapper.toDto(booking.getBooker()), itemMapper.toDto(item))
-                .apply(booking);
+        return bookingMapper.toDto(booking);
     }
 
     @Override
@@ -74,10 +68,9 @@ public class BookingServiceImpl implements BookingService {
         Item item = booking.getItem();
         User booker = booking.getBooker();
         if (userId != item.getOwner().getId() && userId != booker.getId()) {
-            throw new NotFoundException("User with id: {0} not have available", userId);
+            throw new NotFoundException(Variables.USER_WITH_ID_NOT_HAVE_AVAILABLE, userId);
         }
-        return bookingMapper.getToDtoWithUserAndItem(userMapper.toDto(booker), itemMapper.toDto(item))
-                .apply(booking);
+        return bookingMapper.toDto(booking);
     }
 
     @Override
@@ -105,10 +98,9 @@ public class BookingServiceImpl implements BookingService {
                 bookings = bookingRepository.findByBookerAndStatus(booker, BookingStatus.REJECTED);
                 break;
         }
-        UserDto bookerDto = userMapper.toDto(booker);
-        Function<Booking, BookingDto> mapper = bookingMapper.getDtoWithOneUserAndItems(bookerDto);
         return bookings.stream()
-                .map(mapper).collect(Collectors.toList());
+                .map(booking -> bookingMapper.toDtoWithUser(booking, booker))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -138,10 +130,7 @@ public class BookingServiceImpl implements BookingService {
         }
 
         return bookings.stream()
-                .map(booking -> bookingMapper.getToDtoWithUserAndItem(
-                                userMapper.toDto(booking.getBooker()), itemMapper.toDto(booking.getItem()))
-                        .apply(booking)
-                )
+                .map(bookingMapper::toDto)
                 .collect(Collectors.toList());
     }
 
@@ -161,6 +150,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     private User returnUserOrThrowException(Long userId) {
-        return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(Variables.USER_WITH_ID_NOT_FOUND, userId));
     }
 }

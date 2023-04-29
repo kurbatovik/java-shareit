@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.Variables;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -36,7 +37,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDto add(long userId, ItemDto itemDto) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(Variables.USER_WITH_ID_NOT_FOUND, userId));
         Item item = itemMapper.fromDto(itemDto, user);
         Item savedItem = itemRepository.save(item);
         return itemMapper.toDto(savedItem);
@@ -45,7 +46,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto edit(long itemId, long userId, ItemDto itemDto) {
         boolean isUpdated = false;
-        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Item not found"));
+        Item item = getItemOrThrowNotFoundException(itemId);
         log.info("Update: {}", item);
         if (item.getOwner().getId() != userId) {
             throw new NotFoundException("User is not the owner of the item");
@@ -76,7 +77,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public OwnerItemDto getById(long itemId, long userId) {
-        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Item not found"));
+        Item item = getItemOrThrowNotFoundException(itemId);
         LocalDateTime now = LocalDateTime.now();
         Booking lastBooking = null;
         Booking nextBooking = null;
@@ -90,7 +91,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<OwnerItemDto> getAllByUserId(long userId) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(Variables.USER_WITH_ID_NOT_FOUND, userId));
         List<Item> items = itemRepository.findAllByOwner(user);
         LocalDateTime now = LocalDateTime.now();
         return items.stream().map(item -> {
@@ -109,8 +110,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public CommentDto addComment(Long userId, Long itemId, String commentText) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
-        Item item = itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Item not found"));
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(Variables.USER_WITH_ID_NOT_FOUND, userId));
+        Item item = getItemOrThrowNotFoundException(itemId);
         LocalDateTime now = LocalDateTime.now();
         Optional<Booking> booking = bookingRepository
                 .findFirstByItemAndBookerAndStartBeforeAndStatusOrderByStartDesc(item, user, now, BookingStatus.APPROVED);
@@ -125,5 +126,9 @@ public class ItemServiceImpl implements ItemService {
         comment.setText(commentText);
         commentRepository.save(comment);
         return itemMapper.toCommentDto(comment);
+    }
+
+    private Item getItemOrThrowNotFoundException(long itemId) {
+        return itemRepository.findById(itemId).orElseThrow(() -> new NotFoundException("Item not found"));
     }
 }

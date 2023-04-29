@@ -4,8 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.Create;
+import ru.practicum.shareit.Variables;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.OwnerItemDto;
@@ -15,9 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Slf4j
 @Validated
 @RequiredArgsConstructor
@@ -29,7 +35,7 @@ public class ItemController {
 
     // Добавление новой вещи
     @PostMapping
-    public ResponseEntity<ItemDto> add(@RequestHeader("X-Sharer-User-Id") @Positive Long userId,
+    public ResponseEntity<ItemDto> add(@RequestHeader(Variables.USER_ID) @Positive Long userId,
                                        @RequestBody @Validated(Create.class) ItemDto itemDto) {
         log.info("Request on add {}, user id: {}", itemDto, userId);
         return ResponseEntity.ok(itemService.add(userId, itemDto));
@@ -38,7 +44,7 @@ public class ItemController {
     // Редактирование вещи
     @PatchMapping("/{itemId}")
     public ResponseEntity<ItemDto> edit(@PathVariable @Positive Long itemId,
-                                        @RequestHeader("X-Sharer-User-Id") @Positive Long userId,
+                                        @RequestHeader(Variables.USER_ID) @Positive Long userId,
                                         @RequestBody ItemDto itemDto) {
         log.info("Request on edit item id: {}, {}, user id: {}", itemId, itemDto, userId);
         return ResponseEntity.ok(itemService.edit(itemId, userId, itemDto));
@@ -46,7 +52,7 @@ public class ItemController {
 
     // Просмотр информации о конкретной вещи по её идентификатору
     @GetMapping("/{itemId}")
-    public ResponseEntity<OwnerItemDto> getById(@RequestHeader("X-Sharer-User-Id") @Positive Long userId,
+    public ResponseEntity<OwnerItemDto> getById(@RequestHeader(Variables.USER_ID) @Positive Long userId,
                                                 @PathVariable @Positive Long itemId) {
         log.info("Request from user ID: {} on get item. ID: {}", userId, itemId);
         return ResponseEntity.ok(itemService.getById(itemId, userId));
@@ -54,7 +60,7 @@ public class ItemController {
 
     // Просмотр владельцем списка всех его вещей с указанием названия и описания для каждой
     @GetMapping
-    public ResponseEntity<List<OwnerItemDto>> getAll(@RequestHeader("X-Sharer-User-Id") @Positive Long userId) {
+    public ResponseEntity<List<OwnerItemDto>> getAll(@RequestHeader(Variables.USER_ID) @Positive Long userId) {
         log.info("Request on get all for user id: {}", userId);
         List<OwnerItemDto> allByUserId = itemService.getAllByUserId(userId);
         System.out.println(false);
@@ -73,7 +79,7 @@ public class ItemController {
 
     // Добавление комментария
     @PostMapping("{itemId}/comment")
-    public ResponseEntity<CommentDto> addComment(@RequestHeader("X-Sharer-User-Id") @Positive Long userId,
+    public ResponseEntity<CommentDto> addComment(@RequestHeader(Variables.USER_ID) @Positive Long userId,
                                                  @RequestBody @Validated(Create.class) CommentDto commentDto,
                                                  @PathVariable @Positive Long itemId) {
         log.info("Request on add comment {}, item id: {}, user id: {}", commentDto.getText(), itemId, userId);
