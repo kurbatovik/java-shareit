@@ -3,13 +3,14 @@ package ru.practicum.shareit.user;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.Variables;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.SaveErrorException;
 import ru.practicum.shareit.exception.UserFoundException;
-import ru.practicum.shareit.user.dao.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.repository.UserRepository;
 
+import javax.transaction.Transactional;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
@@ -22,14 +23,11 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-
+    @Transactional
     @Override
     public UserDto add(UserDto userDto) {
         User user = userMapper.fromDto(userDto);
-        userRepository.findByEmail(user.getEmail()).ifPresent(this::throwExceptionWhenUserIsPresent);
-        User newUser = userRepository.create(user).orElseThrow(
-                () -> new SaveErrorException("User is not save: {0}", user)
-        );
+        User newUser = userRepository.save(user);
         return userMapper.toDto(newUser);
     }
 
@@ -43,7 +41,6 @@ public class UserServiceImpl implements UserService {
         if (updatedUserEmail != null && !updatedUserEmail.equals(user.getEmail())) {
             userRepository.findByEmail(updatedUserEmail).filter(u -> u.getId() != user.getId())
                     .ifPresent(this::throwExceptionWhenUserIsPresent);
-            userRepository.removeEmail(user.getEmail());
             user.setEmail(updatedUserEmail);
             log.info("Update email address");
             isUpdated = true;
@@ -55,7 +52,7 @@ public class UserServiceImpl implements UserService {
             isUpdated = true;
         }
         if (isUpdated) {
-            userRepository.update(user);
+            userRepository.save(user);
         }
         return userMapper.toDto(user);
     }
@@ -72,7 +69,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void delete(Long id) {
-        userRepository.delete(id);
+        userRepository.deleteById(id);
     }
 
     private User returnUserOrThrowUserNotFoundException(Long id) {
@@ -80,7 +77,7 @@ public class UserServiceImpl implements UserService {
         return optionalUser.orElseThrow(
                 () -> {
                     log.info("Throw new NotFoundException");
-                    return new NotFoundException("User with ID: {0} not found", id);
+                    return new NotFoundException(Variables.USER_WITH_ID_NOT_FOUND, id);
                 }
         );
     }

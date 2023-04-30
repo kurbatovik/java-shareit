@@ -12,5 +12,5 @@ public class ErrorResponse {
 
     @JsonInclude(JsonInclude.Include.NON_EMPTY)
     private final Map<String, String> errors;
-    private String message;
+    private String error;
 }

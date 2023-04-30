@@ -1,15 +1,15 @@
 package ru.practicum.shareit.item.dto;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import ru.practicum.shareit.Create;
-import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.ShortBookingDto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * TODO Sprint add-controllers.
@@ -18,8 +18,7 @@ import javax.validation.constraints.NotNull;
 @Setter
 @ToString
 @Builder
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class ItemDto {
+public class OwnerItemDto {
     private long id;
     @NotBlank(message = "Name can't blank", groups = {Create.class})
     private String name;
@@ -27,6 +26,7 @@ public class ItemDto {
     private String description;
     @NotNull(message = "Available should be specified", groups = {Create.class})
     private Boolean available;
-    private BookingDto lastBooking;
-    private BookingDto nextBooking;
+    private ShortBookingDto lastBooking;
+    private ShortBookingDto nextBooking;
+    private List<CommentDto> comments;
 }
