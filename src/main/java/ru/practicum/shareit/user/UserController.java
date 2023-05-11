@@ -17,13 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.Create;
 import ru.practicum.shareit.Update;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.model.User;
 
 import javax.validation.constraints.Positive;
 import java.util.List;
+import java.util.stream.Collectors;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Slf4j
 @Validated
 @RequiredArgsConstructor
@@ -31,29 +30,36 @@ import java.util.List;
 @RequestMapping(path = "/users")
 public class UserController {
     private final UserService userService;
+    private final UserMapper userMapper;
+
 
     //Просмотр всех пользователей.
     @GetMapping
     public ResponseEntity<List<UserDto>> getAll() {
         log.info("Request on get all");
-        return ResponseEntity.ok(userService.getAll());
+        List<UserDto> dtoList = userService.getAll()
+                .stream()
+                .map(userMapper::toDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtoList);
     }
 
     //Просмотр пользователя по идентификатору
     @GetMapping("{id}")
     public ResponseEntity<UserDto> getById(@PathVariable @Positive(message = "ID should be positive") Long id) {
         log.info("Request to get user with ID: {}", id);
-        return ResponseEntity.ok(userService.getById(id));
+        UserDto userDto = userMapper.toDto(userService.getById(id));
+        return ResponseEntity.ok(userDto);
     }
 
     //Добавление нового пользователя
     @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping("")
+    @PostMapping
     public ResponseEntity<UserDto> add(@Validated(Create.class) @RequestBody UserDto userDto) {
         log.debug("Request to create: {}", userDto);
-        UserDto newUser = userService.add(userDto);
+        User newUser = userService.add(userMapper.fromDto(userDto));
         log.info("Has been created: {}", newUser);
-        return ResponseEntity.ok(newUser);
+        return ResponseEntity.ok(userMapper.toDto(newUser));
     }
 
     //Редактирование нового пользователя
@@ -61,12 +67,12 @@ public class UserController {
     public ResponseEntity<UserDto> edit(@Validated(Update.class) @RequestBody UserDto userDto,
                                         @PathVariable @Positive(message = "ID should be positive") Long id) {
         log.debug("Request to updated: {}", userDto);
-        UserDto updatedUser = userService.edit(id, userDto);
+        User updatedUser = userService.edit(id, userMapper.fromDto(userDto));
         log.info("Has been updated: {}", updatedUser);
-        return ResponseEntity.ok(updatedUser);
+        return ResponseEntity.ok(userMapper.toDto(updatedUser));
     }
 
-    //Удаление полььзователя
+    //Удаление пользователя
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("{id}")
     public void delete(@PathVariable @Positive(message = "ID should be positive") Long id) {

@@ -6,35 +6,27 @@ import org.springframework.stereotype.Service;
 import ru.practicum.shareit.Variables;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.exception.UserFoundException;
-import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import javax.transaction.Transactional;
 import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
-    private final UserMapper userMapper;
 
-    @Transactional
     @Override
-    public UserDto add(UserDto userDto) {
-        User user = userMapper.fromDto(userDto);
-        User newUser = userRepository.save(user);
-        return userMapper.toDto(newUser);
+    public User add(User user) {
+        return userRepository.save(user);
     }
 
     @Override
-    public UserDto edit(Long id, UserDto userDto) {
+    public User edit(Long id, User updatedUser) {
         boolean isUpdated = false;
-        User updatedUser = userMapper.fromDto(userDto);
         User user = returnUserOrThrowUserNotFoundException(id);
         log.info("Update: {}", user);
         String updatedUserEmail = updatedUser.getEmail();
@@ -54,17 +46,17 @@ public class UserServiceImpl implements UserService {
         if (isUpdated) {
             userRepository.save(user);
         }
-        return userMapper.toDto(user);
+        return user;
     }
 
     @Override
-    public List<UserDto> getAll() {
-        return userRepository.findAll().stream().map(userMapper::toDto).collect(Collectors.toList());
+    public List<User> getAll() {
+        return userRepository.findAll();
     }
 
     @Override
-    public UserDto getById(Long id) {
-        return userMapper.toDto(returnUserOrThrowUserNotFoundException(id));
+    public User getById(Long id) {
+        return returnUserOrThrowUserNotFoundException(id);
     }
 
     @Override

@@ -10,9 +10,6 @@ import ru.practicum.shareit.Update;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
 
-/**
- * TODO Sprint add-controllers.
- */
 
 @Builder
 @Getter
