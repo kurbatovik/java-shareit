@@ -22,7 +22,6 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -38,7 +37,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 public class ItemServiceImplTest {
 
-    private final LocalDateTime now = LocalDateTime.now();
     private final Pageable pageable = Pageable.unpaged();
     @InjectMocks
     private ItemServiceImpl itemService;
@@ -80,7 +78,7 @@ public class ItemServiceImplTest {
         items = new ArrayList<>();
         items.add(item);
 
-        comment = Comment.builder().id(1L).author(booker).text("cool").build();
+        comment = Comment.builder().id(1L).author(booker).text("cool").item(item).build();
         comments = new ArrayList<>();
         comments.add(comment);
     }
@@ -231,9 +229,9 @@ public class ItemServiceImplTest {
     void getItemByIdWithValidInputsShouldReturnsItemWithBookings() {
         when(itemRepository.findById(anyLong())).thenReturn(Optional.of(item));
         when(commentRepository.findByItemId(item.getId())).thenReturn(comments);
-        when(bookingRepository.findFirstByItemAndStartAfterAndStatusNotOrderByStart(any(), any(), any()))
+        when(bookingRepository.findFirstByItemAndStartAfterAndStatusOrderByStart(any(), any(), any()))
                 .thenReturn(Optional.of(Booking.builder().id(1L).build()));
-        when(bookingRepository.findFirstByItemAndStartBeforeAndStatusNotOrderByStartDesc(any(), any(), any()))
+        when(bookingRepository.findFirstByItemAndStartLessThanEqualAndStatusOrderByStartDesc(any(), any(), any()))
                 .thenReturn(Optional.of(Booking.builder().id(2L).build()));
 
         ExtendItem result = itemService.getById(1L, 2L);
@@ -248,14 +246,18 @@ public class ItemServiceImplTest {
 
     @Test
     void getAllByUserIdWithValidInputsShouldReturnsItemsWithBookings() {
+        List<Booking> nextBookings = new ArrayList<>();
+        nextBookings.add(Booking.builder().id(1L).item(item).build());
+        List<Booking> lastBookings = new ArrayList<>();
+        lastBookings.add(Booking.builder().id(2L).item(item).build());
         Page<Item> itemsPage = new PageImpl<>(items);
         when(userRepository.findById(owner.getId())).thenReturn(Optional.of(owner));
         when(itemRepository.findAllByOwnerOrderByIdAsc(any(), any())).thenReturn(itemsPage);
-        when(commentRepository.findByItemId(item.getId())).thenReturn(comments);
-        when(bookingRepository.findFirstByItemAndStartAfterAndStatusNotOrderByStart(any(), any(), any()))
-                .thenReturn(Optional.of(Booking.builder().id(1L).build()));
-        when(bookingRepository.findFirstByItemAndStartBeforeAndStatusNotOrderByStartDesc(any(), any(), any()))
-                .thenReturn(Optional.of(Booking.builder().id(2L).build()));
+        when(commentRepository.findByItemIn(any(), any())).thenReturn(comments);
+        when(bookingRepository.findFirstByItemInAndStartLessThanEqualAndStatusOrderByStartDesc(any(), any(), any()))
+                .thenReturn(lastBookings);
+        when(bookingRepository.findFirstByItemInAndStartAfterAndStatusOrderByStart(any(), any(), any()))
+                .thenReturn(nextBookings);
 
         List<ExtendItem> result = itemService.getAllByUserId(2L, pageable);
 

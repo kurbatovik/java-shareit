@@ -6,13 +6,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.Variables;
 import ru.practicum.shareit.exception.NotFoundException;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.request.repository.RequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -20,6 +25,7 @@ import java.util.List;
 public class RequestServiceImpl implements RequestService {
     private final UserRepository userRepository;
     private final RequestRepository requestRepository;
+    private final ItemRepository itemRepository;
 
     @Override
     public Request add(Long userId, Request request) {
@@ -32,20 +38,35 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public Request getById(Long requestId, Long userId) {
-        User requester = getUserOrThrowException(userId);
-        return requestRepository.findById(requestId)
+        getUserOrThrowException(userId);
+        Request request = requestRepository.findById(requestId)
                 .orElseThrow(() -> new NotFoundException("Request with ID: {0} not found", requestId));
+        List<Item> items = itemRepository.findAllByRequestOrderByIdAsc(requestId);
+        request.setItems(items);
+        return request;
     }
 
     @Override
     public List<Request> getAll(long userId, Pageable pageable) {
-        return requestRepository.findAllByRequesterIdNot(userId, pageable).toList();
+        List<Request> requests = requestRepository.findAllByRequesterIdNot(userId, pageable).toList();
+        List<Long> requestIds = requests.stream().map(Request::getId).collect(Collectors.toList());
+        Map<Long, List<Item>> items = itemRepository.findAllByRequestInOrderByIdAsc(requestIds).stream()
+                .collect(Collectors.groupingBy(Item::getRequestId, Collectors.toList()));
+        return requests.stream()
+                .peek(request -> request.setItems(items.get(request.getId())))
+                .collect(Collectors.toList());
     }
 
     @Override
     public List<Request> getAllForUser(Long userId, Pageable pageable) {
         User requester = getUserOrThrowException(userId);
-        return requestRepository.findAllByRequester(requester, pageable).toList();
+        List<Request> requests = requestRepository.findAllByRequester(requester, pageable).toList();
+        List<Long> requestIds = requests.stream().map(Request::getId).collect(Collectors.toList());
+        Map<Long, List<Item>> items = itemRepository.findAllByRequestInOrderByIdAsc(requestIds).stream()
+                .collect(Collectors.groupingBy(Item::getRequestId, Collectors.toList()));
+        return requests.stream()
+                .peek(request -> request.setItems(items.getOrDefault(request.getId(), Collections.emptyList())))
+                .collect(Collectors.toList());
     }
 
     private User getUserOrThrowException(long userId) {

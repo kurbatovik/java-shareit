@@ -13,7 +13,6 @@ import org.springframework.web.method.annotation.MethodArgumentTypeMismatchExcep
 import ru.practicum.shareit.exception.BadStateException;
 import ru.practicum.shareit.exception.NotAvailableException;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.UserFoundException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.HashMap;
@@ -29,28 +28,21 @@ public class ErrorHandler {
         return ErrorResponse.builder().error(e.getMessage()).build();
     }
 
-    @ExceptionHandler(UserFoundException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleException(final UserFoundException e) {
-        log.info("Conflict: {}", e.getMessage());
-        return ErrorResponse.builder().error(e.getMessage()).build();
-    }
-
-    @ExceptionHandler(NotFoundException.class)
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleException(final NotFoundException e) {
         log.info("Not found: {}", e.getMessage());
         return ErrorResponse.builder().error(e.getMessage()).build();
     }
 
-    @ExceptionHandler(NotAvailableException.class)
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleException(final NotAvailableException e) {
         log.info("Not available: {}", e.getMessage());
         return ErrorResponse.builder().error(e.getMessage()).build();
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleException(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -63,7 +55,7 @@ public class ErrorHandler {
         return ErrorResponse.builder().error("Validation failed").errors(errors).build();
     }
 
-    @ExceptionHandler(ConstraintViolationException.class)
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleException(ConstraintViolationException e) {
         Map<String, String> errors = new HashMap<>();
@@ -76,25 +68,26 @@ public class ErrorHandler {
         return ErrorResponse.builder().error("Validation failed").errors(errors).build();
     }
 
-    @ExceptionHandler(HttpMessageNotReadableException.class)
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleException(HttpMessageNotReadableException e) {
+        log.info("Malformed JSON Request: {}", e.getMessage());
         return ErrorResponse.builder().error("Malformed JSON Request").build();
     }
 
-    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleException(MethodArgumentTypeMismatchException e) {
         return ErrorResponse.builder().error(e.getMessage()).build();
     }
 
-    @ExceptionHandler(MissingRequestHeaderException.class)
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleException(MissingRequestHeaderException e) {
         return ErrorResponse.builder().error(e.getMessage()).build();
     }
 
-    @ExceptionHandler(BadStateException.class)
+    @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleException(BadStateException e) {
         return ErrorResponse.builder().error(e.getMessage()).build();

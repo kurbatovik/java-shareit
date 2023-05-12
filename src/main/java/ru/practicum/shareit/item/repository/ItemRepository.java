@@ -20,4 +20,7 @@ public interface ItemRepository extends JpaRepository<Item, Long> {
 
     @Query("SELECT item, item.owner.id FROM Item item WHERE item.requestId = ?1")
     List<Item> findAllByRequestOrderByIdAsc(long requestId);
+
+    @Query("SELECT item, item.owner.id FROM Item item WHERE item.requestId IN ?1")
+    List<Item> findAllByRequestInOrderByIdAsc(List<Long> requestIds);
 }

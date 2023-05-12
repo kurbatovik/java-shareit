@@ -16,8 +16,8 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class Request {
     @JoinColumn(name = "user_id")
     private User requester;
 
-    @OneToMany(mappedBy = "requestId")
+    @Transient
     private List<Item> items;
 
 }

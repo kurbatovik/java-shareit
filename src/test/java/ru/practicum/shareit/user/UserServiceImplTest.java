@@ -7,7 +7,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.UserFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -128,25 +127,6 @@ public class UserServiceImplTest {
         );
 
         assertEquals("User with ID: 1 not found", exception.getMessage());
-    }
-
-    @Test
-    void editWithExistingEmailShouldThrowsUserFoundException() {
-        User existUser = user.toBuilder()
-                .id(3L)
-                .build();
-        User updateUser = User.builder()
-                .email("troro@jim.up").build();
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(user));
-        when(userRepository.findByEmail(anyString())).thenReturn(Optional.of(
-                existUser
-        ));
-        UserFoundException exception = assertThrows(
-                UserFoundException.class,
-                () -> userService.edit(1L, updateUser)
-        );
-
-        assertEquals("User with this email address is found. ID: 3, email: viktor@gmail.com", exception.getMessage());
     }
 
     @Test

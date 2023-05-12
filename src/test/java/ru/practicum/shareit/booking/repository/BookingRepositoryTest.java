@@ -147,17 +147,18 @@ class BookingRepositoryTest {
     @Test
     void findFirstByItemAndStartAfterAndStatusNotOrderByStart() {
         Optional<Booking> result = bookingRepository
-                .findFirstByItemAndStartAfterAndStatusNotOrderByStart(testData.getItem3(), now, BookingStatus.REJECTED);
+                .findFirstByItemAndStartAfterAndStatusOrderByStart(testData.getItem2(), now.minusHours(2L),
+                        BookingStatus.APPROVED);
 
         assertThat(result).isNotEmpty();
-        assertThat(result.get().getId()).isEqualTo(4L);
-        assertThat(result.get().getStatus()).isEqualTo(BookingStatus.WAITING);
+        assertThat(result.get().getId()).isEqualTo(3L);
+        assertThat(result.get().getStatus()).isEqualTo(BookingStatus.APPROVED);
     }
 
     @Test
     void findFirstByItemAndStartBeforeAndStatusNotOrderByStartDesc() {
         Optional<Booking> result = bookingRepository
-                .findFirstByItemAndStartBeforeAndStatusNotOrderByStartDesc(testData.getItem1(), now, BookingStatus.REJECTED);
+                .findFirstByItemAndStartLessThanEqualAndStatusOrderByStartDesc(testData.getItem1(), now, BookingStatus.APPROVED);
 
         assertThat(result).isNotEmpty();
         assertThat(result.get().getId()).isEqualTo(1L);

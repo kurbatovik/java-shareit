@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.Variables;
 import ru.practicum.shareit.booking.BookingStatus;
@@ -20,7 +21,12 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
+
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 
 @Slf4j
 @Service
@@ -78,11 +84,12 @@ public class ItemServiceImpl implements ItemService {
             LocalDateTime now = LocalDateTime.now();
             item.setNextBooking(
                     bookingRepository
-                            .findFirstByItemAndStartAfterAndStatusNotOrderByStart(item, now, BookingStatus.REJECTED)
+                            .findFirstByItemAndStartAfterAndStatusOrderByStart(item, now, BookingStatus.APPROVED)
                             .orElse(null));
             item.setLastBooking(
                     bookingRepository
-                            .findFirstByItemAndStartBeforeAndStatusNotOrderByStartDesc(item, now, BookingStatus.REJECTED)
+                            .findFirstByItemAndStartLessThanEqualAndStatusOrderByStartDesc(item, now,
+                                    BookingStatus.APPROVED)
                             .orElse(null));
         }
         return item;
@@ -92,18 +99,22 @@ public class ItemServiceImpl implements ItemService {
     public List<ExtendItem> getAllByUserId(long userId, Pageable pageable) {
         User user = getOwnerOrThrowNotFoundException(userId);
         List<Item> items = itemRepository.findAllByOwnerOrderByIdAsc(user, pageable).toList();
+        Map<Item, List<Comment>> comments = commentRepository.findByItemIn(items, Sort.by(DESC, "created"))
+                .stream()
+                .collect(groupingBy(Comment::getItem, toList()));
         LocalDateTime now = LocalDateTime.now();
+        Map<Item, Booking> lastBookings = bookingRepository
+                .findFirstByItemInAndStartLessThanEqualAndStatusOrderByStartDesc(items, now, BookingStatus.APPROVED)
+                .stream()
+                .collect(toMap(Booking::getItem, booking -> booking));
+        Map<Item, Booking> nextBookings = bookingRepository
+                .findFirstByItemInAndStartAfterAndStatusOrderByStart(items, now, BookingStatus.APPROVED)
+                .stream()
+                .collect(toMap(Booking::getItem, booking -> booking));
         return items.stream().map(item -> new ExtendItem(item)
-                .setComments(commentRepository.findByItemId(item.getId()))
-                .setLastBooking(
-                        bookingRepository
-                                .findFirstByItemAndStartBeforeAndStatusNotOrderByStartDesc(item, now, BookingStatus.REJECTED)
-                                .orElse(null))
-                .setNextBooking(
-                        bookingRepository
-                                .findFirstByItemAndStartAfterAndStatusNotOrderByStart(item, now, BookingStatus.REJECTED)
-                                .orElse(null))
-        ).collect(Collectors.toList());
+                .setComments(comments.get(item))
+                .setLastBooking(lastBookings.get(item))
+                .setNextBooking(nextBookings.get(item))).collect(toList());
     }
 
     @Override
@@ -116,7 +127,7 @@ public class ItemServiceImpl implements ItemService {
         User user = getOwnerOrThrowNotFoundException(userId);
         Item item = getItemOrThrowNotFoundException(itemId);
         LocalDateTime now = LocalDateTime.now();
-        Booking booking = bookingRepository
+        bookingRepository
                 .findFirstByItemAndBookerAndStartBeforeAndStatusOrderByStartDesc(item, user, now, BookingStatus.APPROVED)
                 .orElseThrow(() -> new NotAvailableException("Booking is not available for user id: {0} and item id: {1}",
                         userId, itemId));

@@ -3,7 +3,6 @@ package ru.practicum.shareit.request;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,48 +36,46 @@ public class RequestController {
 
     // Добавление нового запроса
     @PostMapping
-    public ResponseEntity<RequestDto> add(@RequestHeader(Variables.USER_ID) @Positive Long userId,
-                                          @Validated(Create.class) @RequestBody RequestDto requestDto) {
+    public RequestDto add(@RequestHeader(Variables.USER_ID) @Positive Long userId,
+                          @Validated(Create.class) @RequestBody RequestDto requestDto) {
         log.info("Add request on item {}, user id: {}", requestDto, userId);
         Request request = requestMapper.fromDto(requestDto);
         requestDto = requestMapper.toDto(requestService.add(userId, request));
-        return ResponseEntity.ok(requestDto);
+        return requestDto;
     }
 
     // Просмотр информации о конкретном запросе по его идентификатору
     @GetMapping("/{requestId}")
-    public ResponseEntity<RequestDto> getById(@RequestHeader(Variables.USER_ID) @Positive Long userId,
-                                              @PathVariable @Positive Long requestId) {
+    public RequestDto getById(@RequestHeader(Variables.USER_ID) @Positive Long userId,
+                              @PathVariable @Positive Long requestId) {
         log.info("Request from user ID: {} on get request. ID: {}", userId, requestId);
-        RequestDto requestDto = requestMapper.toDto(requestService.getById(requestId, userId));
-        return ResponseEntity.ok(requestDto);
+        return requestMapper.toDto(requestService.getById(requestId, userId));
     }
 
     //получить список запросов, созданных другими пользователями
     @GetMapping
-    public ResponseEntity<List<RequestDto>> getRequesterAll(@RequestHeader(Variables.USER_ID) @Positive Long userId,
-                                                            @RequestParam(defaultValue = "0") @PositiveOrZero int from,
-                                                            @RequestParam(defaultValue = "20") @Positive int size) {
+    public List<RequestDto> getRequesterAll(@RequestHeader(Variables.USER_ID) @Positive Long userId,
+                                            @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                            @RequestParam(defaultValue = "20") @Positive int size) {
         Pageable pageable = Util.getPageable(from, size);
         log.info("Request on get all requests from user id: {}", userId);
-        List<RequestDto> dtoList = requestService.getAllForUser(userId, pageable)
+        return requestService.getAllForUser(userId, pageable)
                 .stream()
                 .map(requestMapper::toDto)
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(dtoList);
     }
 
     // Просмотр пользователем списка всех его запросов с указанием ответов на них
     @GetMapping("/all")
-    public ResponseEntity<List<RequestDto>> getAll(@RequestHeader(Variables.USER_ID) @Positive Long userId,
-                                                   @RequestParam(defaultValue = "0") @PositiveOrZero int from,
-                                                   @RequestParam(defaultValue = "20") @Positive int size) {
+    public List<RequestDto> getAll(@RequestHeader(Variables.USER_ID) @Positive Long userId,
+                                   @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                   @RequestParam(defaultValue = "20") @Positive int size) {
         Pageable pageable = Util.getPageable(from, size);
         List<RequestDto> dtoList = requestService.getAll(userId, pageable)
                 .stream()
                 .map(requestMapper::toDto)
                 .collect(Collectors.toList());
         log.info("Request on get all requests");
-        return ResponseEntity.ok(dtoList);
+        return dtoList;
     }
 }

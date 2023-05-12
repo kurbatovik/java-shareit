@@ -5,11 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.Variables;
 import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.UserFoundException;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import java.text.MessageFormat;
 import java.util.List;
 import java.util.Optional;
 
@@ -30,15 +28,13 @@ public class UserServiceImpl implements UserService {
         User user = returnUserOrThrowUserNotFoundException(id);
         log.info("Update: {}", user);
         String updatedUserEmail = updatedUser.getEmail();
-        if (updatedUserEmail != null && !updatedUserEmail.equals(user.getEmail())) {
-            userRepository.findByEmail(updatedUserEmail).filter(u -> u.getId() != user.getId())
-                    .ifPresent(this::throwExceptionWhenUserIsPresent);
+        if (updatedUserEmail != null && !updatedUserEmail.equals(user.getEmail()) && !updatedUserEmail.isBlank()) {
             user.setEmail(updatedUserEmail);
             log.info("Update email address");
             isUpdated = true;
         }
         String updatedUserName = updatedUser.getName();
-        if (updatedUserName != null && !updatedUserName.equals(user.getName())) {
+        if (updatedUserName != null && !updatedUserName.equals(user.getName()) && !updatedUserName.isBlank()) {
             user.setName(updatedUser.getName());
             log.info("Update user name");
             isUpdated = true;
@@ -72,13 +68,5 @@ public class UserServiceImpl implements UserService {
                     return new NotFoundException(Variables.USER_WITH_ID_NOT_FOUND, id);
                 }
         );
-    }
-
-    private void throwExceptionWhenUserIsPresent(User user) {
-
-        String error = MessageFormat.format("User with this email address is found. ID: {0}, email: {1}",
-                user.getId(), user.getEmail());
-        log.info("Throw new AlreadyExistException");
-        throw new UserFoundException(error);
     }
 }

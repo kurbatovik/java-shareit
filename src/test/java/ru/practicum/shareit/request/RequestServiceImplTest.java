@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import ru.practicum.shareit.exception.NotFoundException;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.request.model.Request;
 import ru.practicum.shareit.request.repository.RequestRepository;
 import ru.practicum.shareit.user.model.User;
@@ -38,6 +39,8 @@ public class RequestServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
+    @Mock
+    private ItemRepository itemRepository;
 
     private User requester;
     private Request request;
@@ -99,6 +102,8 @@ public class RequestServiceImplTest {
     void getByIdWithValidInputsShouldReturnsRequest() {
         when(requestRepository.findById(anyLong())).thenReturn(Optional.of(request));
         when(userRepository.findById(anyLong())).thenReturn(Optional.of(requester));
+        when(itemRepository.findAllByRequestInOrderByIdAsc(any()))
+                .thenReturn(List.of(Item.builder().requestId(1L).build()));
 
         Request result = requestService.getById(1L, 1L);
 
@@ -124,6 +129,8 @@ public class RequestServiceImplTest {
         Page<Request> requestsPage = new PageImpl<>(requests);
         when(userRepository.findById(requester.getId())).thenReturn(Optional.of(requester));
         when(requestRepository.findAllByRequester(any(), any())).thenReturn(requestsPage);
+        when(itemRepository.findAllByRequestInOrderByIdAsc(any()))
+                .thenReturn(List.of(Item.builder().requestId(1L).build()));
 
         List<Request> result = requestService.getAllForUser(2L, pageable);
 
@@ -135,6 +142,8 @@ public class RequestServiceImplTest {
     void getAllWithValidInputsShouldReturnsRequests() {
         Page<Request> requestsPage = new PageImpl<>(requests);
         when(requestRepository.findAllByRequesterIdNot(any(), any())).thenReturn(requestsPage);
+        when(itemRepository.findAllByRequestInOrderByIdAsc(any()))
+                .thenReturn(List.of(Item.builder().requestId(1L).build()));
 
         List<Request> result = requestService.getAll(2L, pageable);
 
