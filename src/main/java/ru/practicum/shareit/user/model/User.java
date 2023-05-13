@@ -14,9 +14,6 @@ import javax.persistence.Id;
 import javax.persistence.Index;
 import javax.persistence.Table;
 
-/**
- * TODO Sprint add-controllers.
- */
 
 @Builder(toBuilder = true)
 @NoArgsConstructor

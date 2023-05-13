@@ -9,10 +9,8 @@ import ru.practicum.shareit.Update;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Pattern;
+import javax.validation.constraints.Size;
 
-/**
- * TODO Sprint add-controllers.
- */
 
 @Builder
 @Getter
@@ -25,7 +23,9 @@ public class UserDto {
     @Pattern(regexp = "^[A-Z0-9._%+-]+@[A-Z0-9-]+(.[A-Z0-9-]+)*\\.[A-Z]{2,}$", flags = Pattern.Flag.CASE_INSENSITIVE,
             message = "Email is wrong", groups = {Create.class, Update.class})
     @NotNull(message = "Email can not be null", groups = {Create.class})
+    @Size(max = 512, groups = {Create.class, Update.class})
     private String email;
 
+    @Size(max = 255, groups = {Create.class, Update.class})
     private String name;
 }
