@@ -20,9 +20,11 @@ import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -106,13 +108,13 @@ public class ItemServiceImpl implements ItemService {
         Map<Item, Booking> lastBookings = bookingRepository
                 .findFirstByItemInAndStartLessThanEqualAndStatusOrderByStartDesc(items, now, BookingStatus.APPROVED)
                 .stream()
-                .collect(toMap(Booking::getItem, booking -> booking));
+                .collect(toMap(Booking::getItem, identity()));
         Map<Item, Booking> nextBookings = bookingRepository
                 .findFirstByItemInAndStartAfterAndStatusOrderByStart(items, now, BookingStatus.APPROVED)
                 .stream()
-                .collect(toMap(Booking::getItem, booking -> booking));
+                .collect(toMap(Booking::getItem, identity()));
         return items.stream().map(item -> new ExtendItem(item)
-                .setComments(comments.get(item))
+                .setComments(comments.getOrDefault(item, Collections.emptyList()))
                 .setLastBooking(lastBookings.get(item))
                 .setNextBooking(nextBookings.get(item))).collect(toList());
     }

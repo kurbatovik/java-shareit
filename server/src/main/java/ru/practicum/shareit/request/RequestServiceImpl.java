@@ -53,7 +53,7 @@ public class RequestServiceImpl implements RequestService {
         Map<Long, List<Item>> items = itemRepository.findAllByRequestInOrderByIdAsc(requestIds).stream()
                 .collect(Collectors.groupingBy(Item::getRequestId, Collectors.toList()));
         return requests.stream()
-                .peek(request -> request.setItems(items.get(request.getId())))
+                .peek(request -> request.setItems(items.getOrDefault(request.getId(), Collections.emptyList())))
                 .collect(Collectors.toList());
     }
 
