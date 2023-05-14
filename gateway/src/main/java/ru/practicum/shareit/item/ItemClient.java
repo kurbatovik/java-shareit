@@ -7,8 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
-import ru.practicum.shareit.booking.BookingState;
-import ru.practicum.shareit.booking.dto_old.BookItemRequestDto;
 import ru.practicum.shareit.client.BaseClient;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -38,19 +36,6 @@ public class ItemClient extends BaseClient {
         return patch("/" + itemId, userId, userDto);
     }
 
-    public ResponseEntity<Object> getItems(long userId, BookingState state, Integer from, Integer size) {
-        Map<String, Object> parameters = Map.of(
-                "state", state.name(),
-                "from", from,
-                "size", size
-        );
-        return get("?state={state}&from={from}&size={size}", userId, parameters);
-    }
-
-
-    public ResponseEntity<Object> bookItem(long userId, BookItemRequestDto requestDto) {
-        return post("", userId, requestDto);
-    }
 
     public ResponseEntity<Object> getById(Long itemId, Long userId) {
         return get("/" + itemId, userId);

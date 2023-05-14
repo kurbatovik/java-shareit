@@ -3,6 +3,7 @@ package ru.practicum.shareit.item;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -12,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 import ru.practicum.shareit.Create;
 import ru.practicum.shareit.Variables;
 import ru.practicum.shareit.item.dto.CommentDto;
@@ -20,14 +20,14 @@ import ru.practicum.shareit.item.dto.ItemDto;
 
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
 @Slf4j
 @Validated
 @RequiredArgsConstructor
-@RestController
+@Controller
 @RequestMapping("/items")
 public class ItemController {
 
@@ -81,7 +81,7 @@ public class ItemController {
                                                      @RequestParam(defaultValue = "20") @Positive int size) {
         log.info("Request on search text: {}", text);
         if (text.isBlank()) {
-            return ResponseEntity.ok(new ArrayList<>());
+            return ResponseEntity.ok(List.of());
         }
         Map<String, Object> parameters = Map.of(
                 "from", from,

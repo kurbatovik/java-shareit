@@ -11,10 +11,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import ru.practicum.shareit.exception.BadStateException;
-import ru.practicum.shareit.exception.NotAvailableException;
-import ru.practicum.shareit.exception.NotFoundException;
-import ru.practicum.shareit.exception.SaveErrorException;
-import ru.practicum.shareit.exception.UserFoundException;
 
 import javax.validation.ConstraintViolationException;
 import java.util.HashMap;
@@ -27,34 +23,6 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse throwableHandler(final Exception e) {
         log.info("Server error {}", e.getMessage());
-        return ErrorResponse.builder().error(e.getMessage()).build();
-    }
-
-    @ExceptionHandler(UserFoundException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
-    public ErrorResponse handleException(final UserFoundException e) {
-        log.info("Conflict: {}", e.getMessage());
-        return ErrorResponse.builder().error(e.getMessage()).build();
-    }
-
-    @ExceptionHandler(SaveErrorException.class)
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ErrorResponse handleException(final SaveErrorException e) {
-        log.info("Internal server error: {}", e.getMessage());
-        return ErrorResponse.builder().error(e.getMessage()).build();
-    }
-
-    @ExceptionHandler(NotFoundException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleException(final NotFoundException e) {
-        log.info("Not found: {}", e.getMessage());
-        return ErrorResponse.builder().error(e.getMessage()).build();
-    }
-
-    @ExceptionHandler(NotAvailableException.class)
-    @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleException(final NotAvailableException e) {
-        log.info("Not available: {}", e.getMessage());
         return ErrorResponse.builder().error(e.getMessage()).build();
     }
 
@@ -87,24 +55,28 @@ public class ErrorHandler {
     @ExceptionHandler(HttpMessageNotReadableException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleException(HttpMessageNotReadableException e) {
+        log.info("Malformed JSON Request: {}", e.getMessage());
         return ErrorResponse.builder().error("Malformed JSON Request").build();
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleException(MethodArgumentTypeMismatchException e) {
+        public ErrorResponse handleException(MethodArgumentTypeMismatchException e) {
+        log.info("Method argument type mismatch: {}", e.getMessage());
         return ErrorResponse.builder().error(e.getMessage()).build();
     }
 
     @ExceptionHandler(MissingRequestHeaderException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleException(MissingRequestHeaderException e) {
+        log.info("Missing request header: {}", e.getMessage());
         return ErrorResponse.builder().error(e.getMessage()).build();
     }
 
     @ExceptionHandler(BadStateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleException(BadStateException e) {
+        log.info("Bad booking state: {}", e.getMessage());
         return ErrorResponse.builder().error(e.getMessage()).build();
     }
 }

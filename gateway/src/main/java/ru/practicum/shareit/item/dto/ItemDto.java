@@ -26,6 +26,4 @@ public class ItemDto {
     private Boolean available;
     @Positive(message = "Request ID can't be less than 1", groups = {Create.class})
     private Long requestId;
-//    private BookingDto lastBooking;
-//    private BookingDto nextBooking;
 }
