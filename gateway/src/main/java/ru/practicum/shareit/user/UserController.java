@@ -48,8 +48,7 @@ public class UserController {
     @PostMapping
     public ResponseEntity<Object> create(@Validated(Create.class) @RequestBody UserDto userDto) {
         log.debug("Request to create: {}", userDto);
-        ResponseEntity<Object> response = userClient.create(userDto);
-        return response;
+        return userClient.create(userDto);
     }
 
     //

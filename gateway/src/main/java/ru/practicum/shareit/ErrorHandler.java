@@ -32,7 +32,7 @@ public class ErrorHandler {
         Map<String, String> errors = new HashMap<>();
         ex.getBindingResult().getAllErrors().forEach((error) -> {
             String fieldName = ((FieldError) error).getField();
-            String errorMessage = ((FieldError) error).getDefaultMessage();
+            String errorMessage = (error).getDefaultMessage();
             errors.put(fieldName, errorMessage);
             log.info("Validation failed for field: {}. Error message: {}", fieldName, errorMessage);
         });
