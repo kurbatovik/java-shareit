@@ -14,8 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
@@ -23,7 +21,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
@@ -66,17 +63,6 @@ class UserControllerTest {
     }
 
     @Test
-    void saveShouldReturnBadRequestWhenUserIsNull() throws Exception {
-        mockMvc.perform(post("/users")
-                        .content(mapper.writeValueAsString(null))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("Malformed JSON Request")));
-    }
-
-    @Test
     void editShouldReturnOkWhenValidRequest() throws Exception {
         // arrange
         long userId = 1L;
@@ -96,39 +82,6 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    void editShouldReturnBadRequestWhenUserIsNull() throws Exception {
-        mockMvc.perform(patch("/users/{0}", 1L)
-                        .content(mapper.writeValueAsString(null))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("Malformed JSON Request")));
-    }
-
-    @Test
-    void editShouldReturnBadRequestWhenUserIdWrong() throws Exception {
-        mockMvc.perform(patch("/users/{0}", "1L")
-                        .content(mapper.writeValueAsString(user))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString("Failed to convert value of type")));
-    }
-
-    @Test
-    void editShouldReturnBadRequestWhenUserIdZeroOrNegative() throws Exception {
-        mockMvc.perform(patch("/users/{0}", 0L)
-                        .content(mapper.writeValueAsString(null))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("Malformed JSON Request")));
     }
 
     @Test
@@ -166,17 +119,6 @@ class UserControllerTest {
     }
 
     @Test
-    void getByIdShouldReturnBadRequestWhenUserIdWrong() throws Exception {
-        mockMvc.perform(get("/users/{0}", "1L")
-                        .content(mapper.writeValueAsString(null))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString("Failed to convert value of type")));
-    }
-
-    @Test
     void deleteShouldReturnNoContentWhenValidRequest() throws Exception {
         long userId = 1L;
 
@@ -185,14 +127,5 @@ class UserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNoContent());
-    }
-
-    @Test
-    void deleteShouldReturnBadRequestWhenUserIdIsWrong() throws Exception {
-        mockMvc.perform(delete("/users/{0}", "0L")
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
     }
 }

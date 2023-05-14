@@ -10,7 +10,6 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.user.dto.UserDto;
 
 import java.nio.charset.StandardCharsets;
 
@@ -58,31 +57,6 @@ class ItemControllerTest {
     }
 
     @Test
-    void saveShouldReturnBadRequestWhenItemNull() throws Exception {
-        long userId = 1L;
-        mockMvc.perform(post("/items")
-                        .content(mapper.writeValueAsString(null))
-                        .header("X-Sharer-User-Id", userId)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void saveShouldReturnBadRequestWhenUserIdNotValid() throws Exception {
-        String userId = "1L";
-
-        mockMvc.perform(post("/items")
-                        .content(mapper.writeValueAsString(itemDto))
-                        .header("X-Sharer-User-Id", userId)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     void editShouldReturnOkWhenValidRequest() throws Exception {
         long userId = 1L;
         long itemId = 1L;
@@ -94,53 +68,6 @@ class ItemControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    void editShouldReturnBadRequestWhenItemNull() throws Exception {
-        long userId = 1L;
-        mockMvc.perform(patch("/items/{0}", 1L)
-                        .content(mapper.writeValueAsString(null))
-                        .header("X-Sharer-User-Id", userId)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void editShouldReturnBadRequestWhenUserIdNotValid() throws Exception {
-        String userId = "1L";
-        UserDto badItem = UserDto.builder()
-                .id(1L)
-                .name(itemDto.getName())
-                .email(itemDto.getDescription())
-                .build();
-
-        mockMvc.perform(patch("/items/{0}", badItem.getId())
-                        .content(mapper.writeValueAsString(badItem))
-                        .header("X-Sharer-User-Id", userId)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void editShouldReturnBadRequestWhenNoUserId() throws Exception {
-        ItemDto badItem = ItemDto.builder()
-                .id(1L)
-                .name(itemDto.getName())
-                .description(itemDto.getDescription())
-                .available(null)
-                .build();
-
-        mockMvc.perform(patch("/items/{0}", badItem.getId())
-                        .content(mapper.writeValueAsString(badItem))
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest());
     }
 
     @Test

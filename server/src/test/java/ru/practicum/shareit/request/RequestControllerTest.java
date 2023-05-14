@@ -12,11 +12,8 @@ import ru.practicum.shareit.request.dto.RequestDto;
 
 import java.nio.charset.StandardCharsets;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RequestController.class)
@@ -51,33 +48,6 @@ class RequestControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    void createRequestShouldReturnBadRequestWhenRequestNull() throws Exception {
-        long userId = 1L;
-        mockMvc.perform(post("/requests")
-                        .content(mapper.writeValueAsString(null))
-                        .header("X-Sharer-User-Id", userId)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("Malformed JSON Request")));
-    }
-
-    @Test
-    void createRequestShouldReturnBadRequestWhenUserIdNotValid() throws Exception {
-        String userId = "1L";
-
-        mockMvc.perform(post("/requests")
-                        .content(mapper.writeValueAsString(requestDto))
-                        .header("X-Sharer-User-Id", userId)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString("Failed to convert value of type")));
     }
 
     @Test

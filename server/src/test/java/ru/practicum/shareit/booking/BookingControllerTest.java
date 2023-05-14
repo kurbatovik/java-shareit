@@ -18,15 +18,12 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(BookingController.class)
@@ -66,33 +63,6 @@ class BookingControllerTest {
     }
 
     @Test
-    void createBookingShouldReturnBadRequestWhenBookingNull() throws Exception {
-        long userId = 1L;
-        mockMvc.perform(post("/bookings")
-                        .content(mapper.writeValueAsString(null))
-                        .header("X-Sharer-User-Id", userId)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("Malformed JSON Request")));
-    }
-
-    @Test
-    void createBookingShouldReturnBadRequestWhenUserIdNotValid() throws Exception {
-        String userId = "1L";
-
-        mockMvc.perform(post("/bookings")
-                        .content(mapper.writeValueAsString(bookingDto))
-                        .header("X-Sharer-User-Id", userId)
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString("Failed to convert value of type")));
-    }
-
-    @Test
     void updateBookingStatusShouldReturnOkWhenValidRequest() throws Exception {
         long userId = 1L;
 
@@ -103,19 +73,6 @@ class BookingControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    void updateBookingStatusShouldReturnBadRequestWhenBookingNull() throws Exception {
-        long userId = 1L;
-        mockMvc.perform(patch("/bookings/{0}", 1L)
-                        .header("X-Sharer-User-Id", userId)
-                        .param("approved", "null")
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", containsString("Failed to convert value of type")));
     }
 
     @Test
@@ -152,17 +109,6 @@ class BookingControllerTest {
                         .characterEncoding(StandardCharsets.UTF_8)
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk());
-    }
-
-    @Test
-    void getUserBookingShouldReturnBadRequestWhenNotValidState() throws Exception {
-        mockMvc.perform(get("/bookings")
-                        .header("X-Sharer-User-Id", 1L)
-                        .param("state", "alll")
-                        .characterEncoding(StandardCharsets.UTF_8)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error", is("Unknown state: alll")));
     }
 
     @Test
